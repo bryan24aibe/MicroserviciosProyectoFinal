@@ -3,7 +3,6 @@ from flask_cors import CORS
 from controllers.product_controller import product_bp
 import os
 
-
 app = Flask(__name__)
 
 # CORS Configuration
