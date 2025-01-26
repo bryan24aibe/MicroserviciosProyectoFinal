@@ -5,7 +5,7 @@ on:
     paths:
       - "create_producto/**"  # Solo ejecuta el workflow si hay cambios en este directorio
     branches:
-      - main  # Solo ejecuta el workflow en la rama principal
+      - test_yml  # Solo ejecuta el workflow en la rama principal
 
 jobs:
   build-push-deploy:
