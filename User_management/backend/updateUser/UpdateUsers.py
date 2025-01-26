@@ -1,21 +1,25 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pymysql
+from dotenv import load_dotenv
+import os
+
+load_dotenv(dotenv_path='../../.env')
 
 app = Flask(__name__)
+CORS(app)
 
-# Configuración de conexión a la base de datos
 DB_CONFIG = {
-    "host": "host.docker.internal",
-    "user": "root",
-    "password": "843228",
-    "database": "authentication",
-    "port": 3306
+    "host": os.getenv("DB_HOST"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "database": os.getenv("DB_NAME"),
+    "port": int(os.getenv("DB_PORT"))
 }
 
-# Endpoint para actualizar el username y el email
 @app.route('/update-user', methods=['POST'])
 def update_user():
-    data = request.get_json()  # Obtener datos del cuerpo de la solicitud
+    data = request.get_json()
     if not data or 'username' not in data or 'new_username' not in data or 'new_email' not in data:
         return jsonify({"error": "Missing required fields"}), 400
 
@@ -24,11 +28,9 @@ def update_user():
     new_email = data['new_email']
 
     try:
-        # Conexión a la base de datos
         mydb = pymysql.connect(**DB_CONFIG)
         cursor = mydb.cursor()
 
-        # Consulta SQL para actualizar los datos
         sqlquery = "UPDATE users SET username=%s, email=%s WHERE username=%s"
         cursor.execute(sqlquery, (new_username, new_email, username))
         mydb.commit()
@@ -45,6 +47,5 @@ def update_user():
         if 'mydb' in locals() and mydb.open:
             mydb.close()
 
-# Iniciar el servidor
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
