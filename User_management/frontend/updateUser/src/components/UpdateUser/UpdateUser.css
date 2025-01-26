@@ -1,0 +1,91 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2; /* Fondo claro como Amazon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  
+  .update-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd; /* Borde sutil */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  h1 {
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #333; /* Texto oscuro */
+  }
+  
+  .update-form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555; /* Texto gris */
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc; /* Bordes neutros */
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease-in-out;
+  }
+  
+  input:focus {
+    border-color: #ff9900; /* Amarillo de Amazon */
+    outline: none;
+  }
+  
+  .update-button {
+    background-color: #ff9900; /* Amarillo Amazon */
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .update-button:hover {
+    background-color: #e68a00;
+  }
+  
+  .update-button:active {
+    background-color: #cc7a00;
+  }
+  
+  .response-message {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #333;
+  }
+  
