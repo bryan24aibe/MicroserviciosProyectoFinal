@@ -25,7 +25,7 @@ jobs:
     # 3. Construye la imagen de Docker
     - name: Build Docker image
       run: |
-        docker build . \
+        docker build create_producto/. --file create_producto/Dockerfile \
         --tag ${{ secrets.DOCKER_USERNAME }}/create_producto:latest \
         --build-arg MONGODB_URI=${{ secrets.MONGODB_URI }} \
         --build-arg MONGODB_DB=${{ secrets.MONGODB_DB }} \
