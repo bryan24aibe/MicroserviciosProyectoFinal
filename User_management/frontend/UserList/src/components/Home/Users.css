@@ -1,0 +1,79 @@
+/* General container */
+.users-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+
+/* Content wrapper */
+.content {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 600px; /* Mantener el ancho máximo */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Title and description */
+.title {
+  font-size: 2rem;
+  color: #333333;
+  margin-bottom: 10px;
+}
+
+.description {
+  font-size: 1rem;
+  color: #555555;
+  margin-bottom: 20px;
+}
+
+/* Table styles */
+.users-table {
+  width: 100%; /* La tabla ahora ocupa todo el ancho del contenedor */
+  border-collapse: collapse;
+  margin: 0 auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.users-table th,
+.users-table td {
+  padding: 10px 15px;
+  border: 1px solid #dddddd;
+  text-align: left;
+}
+
+.users-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+  color: #333333;
+}
+
+.users-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.users-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .users-table th,
+  .users-table td {
+    font-size: 0.9rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
+  }
+}
