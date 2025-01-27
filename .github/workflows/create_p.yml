@@ -45,14 +45,14 @@ jobs:
         port: 22
         script: |
           # Detener y eliminar cualquier contenedor existente
-          docker stop create_producto || true
-          docker rm create_producto || true
+          sudo docker stop create_producto || true
+          sudo docker rm create_producto || true
 
           # Descargar la nueva imagen desde Docker Hub
-          docker pull ${{ secrets.DOCKER_USERNAME }}/create_producto:latest
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/create_producto:latest
 
           # Ejecutar el contenedor en el puerto 80
-          docker run -d \
+          sudo docker run -d \
             --name create_producto \
             -p 80:${{ secrets.PORT }} \
             -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
