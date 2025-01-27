@@ -1,24 +1,28 @@
-# Imagen base de Python
+# Usa una imagen base de Python
 FROM python:3.9-slim
 
-# Configuración de entorno
-ENV PYTHONUNBUFFERED=1
-ENV PORT=3002
-
-# Directorio de trabajo dentro del contenedor
+# Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar los archivos de requisitos
-COPY delete_producto/requirements.txt /app/requirements.txt
-
-# Instalar las dependencias desde requirements.txt
+# Copiar el archivo de requisitos e instalarlos
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el código fuente completo del proyecto
-COPY delete_producto/ /app/
+# Copiar el resto del código de la aplicación
+COPY . .
 
-# Exponer el puerto en el que la aplicación escuchará
-EXPOSE ${PORT}
+# Configurar las variables de entorno pasadas como argumentos
+ARG MONGODB_URI
+ARG MONGODB_DB
+ARG PORT
+
+# Exportar las variables de entorno para que estén disponibles en la aplicación
+ENV MONGODB_URI=$MONGODB_URI
+ENV MONGODB_DB=$MONGODB_DB
+ENV PORT=$PORT
+
+# Exponer el puerto configurado (por defecto 3001)
+EXPOSE $PORT
 
 # Comando para ejecutar la aplicación
 CMD ["python", "app.py"]
