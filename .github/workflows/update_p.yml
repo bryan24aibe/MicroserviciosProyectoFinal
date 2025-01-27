@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "update_service/**"  # Solo ejecuta el workflow si hay cambios en este directorio
-    branches: ["main"]
+    branches: ["test_yml"]
 
 jobs:
   build-push-deploy:
