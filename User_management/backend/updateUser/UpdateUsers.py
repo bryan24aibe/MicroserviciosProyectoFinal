@@ -1,21 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import pymysql
-from dotenv import load_dotenv
-import os
-
-load_dotenv(dotenv_path='../../.env')
+from dbconnection import get_db_connection
 
 app = Flask(__name__)
 CORS(app)
-
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST"),
-    "user": os.getenv("DB_USER"),
-    "password": os.getenv("DB_PASSWORD"),
-    "database": os.getenv("DB_NAME"),
-    "port": int(os.getenv("DB_PORT"))
-}
 
 @app.route('/update-user', methods=['POST'])
 def update_user():
@@ -27,13 +15,15 @@ def update_user():
     new_username = data['new_username']
     new_email = data['new_email']
 
-    try:
-        mydb = pymysql.connect(**DB_CONFIG)
-        cursor = mydb.cursor()
+    db_conn = get_db_connection()
+    if db_conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
 
+    try:
+        cursor = db_conn.cursor()
         sqlquery = "UPDATE users SET username=%s, email=%s WHERE username=%s"
         cursor.execute(sqlquery, (new_username, new_email, username))
-        mydb.commit()
+        db_conn.commit()
 
         if cursor.rowcount > 0:
             return jsonify({"message": "User updated successfully"}), 200
@@ -44,8 +34,8 @@ def update_user():
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
     finally:
-        if 'mydb' in locals() and mydb.open:
-            mydb.close()
+        if db_conn and db_conn.open:
+            db_conn.close()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

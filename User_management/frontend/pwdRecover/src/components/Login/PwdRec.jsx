@@ -20,10 +20,11 @@ const PwdRec = () => {
             const result = await response.text();
 
             if (response.ok) {
-                console.log(result.replace('✅ Recovery code generated: ', ''));
+                console.log(result.replace('✅ Recovery code generated: ', '')); // Muestra el código en consola
                 setStep(2);
             } else {
-                alert(result || 'Error requesting password reset.');
+                alert(result || 'Error: Email not found.');
+                setEmail('');
             }
         } catch (error) {
             console.error('Error:', error);
