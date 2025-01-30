@@ -1,2 +1,16 @@
 **/node_modules/
 .env
+/bin/
+/pkg/
+*.exe
+*.out
+*.a
+*.o
+/vendor/
+/go.sum
+*.test
+coverage.out
+*.log
+/tmp/
+*.prof
+trace.out

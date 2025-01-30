@@ -7,6 +7,9 @@ configure do
   enable :cross_origin
 end
 
+set :bind, '0.0.0.0'
+set :port, 4567
+
 before do
   response.headers['Access-Control-Allow-Origin'] = '*'
 end
