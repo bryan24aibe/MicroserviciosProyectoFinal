@@ -1,19 +1,14 @@
-# Fase de construcción (builder)
 FROM golang:1.23 AS builder
 
 WORKDIR /app
 
-# Copia solo go.mod y go.sum para aprovechar la caché
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Luego copia el resto del código
 COPY . .
 
-# Compila la aplicación sin dependencias de C para reducir tamaño
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app .
 
-# Fase de ejecución (imagen más ligera)
 FROM alpine:latest
 
 WORKDIR /app
