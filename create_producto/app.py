@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 # CORS Configuration
 CORS(app, resources={r"/api/*": {"origins": "*"}})
-#Arreglo 10
+#Arreglo 11
 
 # Register the blueprint
 app.register_blueprint(product_bp)
