@@ -19,16 +19,16 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME1 }}
-          password: ${{ secrets.DOCKER_PASSWORD1 }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build login-fr Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME1 }}/login-fr:latest ./User_management/frontend/login
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/login-fr:latest ./User_management/frontend/login
 
       - name: Push login-fr Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME1 }}/login-fr:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/login-fr:latest
 
   deploy:
     needs: build
@@ -49,6 +49,6 @@ jobs:
               sudo systemctl start docker
               sudo systemctl enable docker
             fi
-            sudo docker pull ${{ secrets.DOCKER_USERNAME1 }}/login-fr:latest
-            sudo docker run -d --name login-fr -p 80:5173 ${{ secrets.DOCKER_USERNAME1 }}/login-fr:latest || true
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/login-fr:latest
+            sudo docker run -d --name login-fr -p 80:5173 ${{ secrets.DOCKER_USERNAME }}/login-fr:latest || true
           EOF

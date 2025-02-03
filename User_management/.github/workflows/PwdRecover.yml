@@ -19,16 +19,16 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME1 }}
-          password: ${{ secrets.DOCKER_PASSWORD1 }}
+          username: ${{ secrets.DOCKER_USERNAME}}
+          password: ${{ secrets.DOCKER_PASSWORD}}
 
       - name: Build PwdRecover Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME1 }}/pwdrecover:latest ./User_management/backend/PwdRecover
+          docker build -t ${{ secrets.DOCKER_USERNAME}}/pwdrecover:latest ./User_management/backend/PwdRecover
 
       - name: Push PwdRecover Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME1 }}/pwdrecover:latest
+          docker push ${{ secrets.DOCKER_USERNAME}}/pwdrecover:latest
 
   deploy:
     needs: build
@@ -49,8 +49,8 @@ jobs:
               sudo systemctl start docker
               sudo systemctl enable docker
             fi
-            sudo docker pull ${{ secrets.DOCKER_USERNAME1 }}/pwdrecover:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/pwdrecover:latest
             sudo docker stop $(sudo docker ps -q) || true
             sudo docker rm -f $(sudo docker ps -aq) || true
-            sudo docker run -d -p 8080:8080 --name pwdrecover ${{ secrets.DOCKER_USERNAME1 }}/pwdrecover:latest
+            sudo docker run -d -p 8080:8080 --name pwdrecover ${{ secrets.DOCKER_USERNAME }}/pwdrecover:latest
           EOF
