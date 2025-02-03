@@ -19,7 +19,7 @@ get '/users' do
 
   if $db_client.nil?
     status 500
-    return { status: 'error', message: 'Database connection not available' }.to_json
+    return { status: 'error', message: 'Database conection not available' }.to_json
   end
 
   begin
