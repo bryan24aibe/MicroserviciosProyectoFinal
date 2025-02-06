@@ -1,0 +1,19 @@
+{
+    "name": "bryan/category_management",
+    "autoload": {
+        "psr-4": {
+            "Bryan\\CategoryManagement\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "balarai",
+            "email": "b24ordonez@gmail.com"
+        }
+    ],
+    "require": {
+        "slim/slim": "^4.14",
+        "slim/psr7": "^1.7",
+        "illuminate/database": "^11.41"
+    }
+}
