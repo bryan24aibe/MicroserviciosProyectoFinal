@@ -54,3 +54,4 @@ jobs:
             sudo docker rm -f $(sudo docker ps -aq)
             sudo docker run -d -p 4567:4567 ${{ secrets.DOCKER_USERNAME }}/listUsers:latest
           EOF
+ 
