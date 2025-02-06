@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 
-# CORS Configuration
+# CORS Configuration 1
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 #Arreglo 12
 
