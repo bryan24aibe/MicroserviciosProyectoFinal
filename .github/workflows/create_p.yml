@@ -29,7 +29,7 @@ jobs:
           --tag ${{ secrets.DOCKER_USERNAME }}/create_producto:latest \
           --build-arg MONGODB_URI=${{ secrets.MONGODB_URI }} \
           --build-arg MONGODB_DB=${{ secrets.MONGODB_DB }} \
-          --build-arg PORT=${{ secrets.PORT }}
+          --build-arg PORT=${{ secrets.PORT1 }}
 
       # 4. Subir la imagen al registro de Docker Hub
       - name: Push Docker image
