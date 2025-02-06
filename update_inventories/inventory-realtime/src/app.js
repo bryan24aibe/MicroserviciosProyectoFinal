@@ -4,7 +4,7 @@ const inventoryRoutes = require('./routes/inventoryRoutes');
 const initializeWebSocket = require('./services/websocketService');
 
 const app = express();
-
+//Array 1
 // Middleware
 app.use(express.json());
 
