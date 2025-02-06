@@ -1,0 +1,54 @@
+name: Build, Push, and Deploy Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build login-fr Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/login-fr:latest ./User_management/frontend/login
+
+      - name: Push login-fr Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/login-fr:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up SSH keys
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
+          chmod 400 private_key.pem
+
+      - name: Connect to EC2 and deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-98-81-224-246.compute-1.amazonaws.com << 'EOF'
+            if ! command -v docker &> /dev/null
+            then
+              sudo dnf install -y docker
+              sudo systemctl start docker
+              sudo systemctl enable docker
+            fi
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/login-fr:latest
+            sudo docker run -d --name login-fr -p 80:5173 ${{ secrets.DOCKER_USERNAME }}/login-fr:latest || true
+          EOF
