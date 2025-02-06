@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "create_producto/**"  # Solo ejecuta el workflow si hay cambios en este directorio
-    branches: ["test_yml"]
+    branches: ["QA"]
 
 jobs:
   build-push-deploy:
