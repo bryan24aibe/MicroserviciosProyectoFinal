@@ -2,8 +2,6 @@ name: Build, Push, and Deploy Docker Image listUser$
 
 on:
   push:
-    paths:
-      - "backend/listUsers"
     branches:
       - feat/user-management
 
@@ -26,11 +24,11 @@ jobs:
 
       - name: Build listUsers Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/listUsers:latest ./User_management/backend/listUsers
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/listusers:latest ./User_management/backend/listUsers
 
       - name: Push listUsers Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/listUsers:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/listusers:latest
 
   deploy:
     needs: build
