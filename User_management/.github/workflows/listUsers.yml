@@ -1,4 +1,4 @@
-name: Build, Push, and Deploy Docker Image listUserS
+name: Build, Push, and Deploy Docker Image listUser$
 
 on:
   push:
