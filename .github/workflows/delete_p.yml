@@ -1,0 +1,67 @@
+name: Build, Push to Docker Hub, and Deploy to EC2
+
+on:
+  push:
+    paths:
+      - "delete_producto/**"  # Solo ejecuta el workflow si hay cambios en este directorio
+    branches: ["test_yml"]  # Cambia esta rama a la que usas en tu repositorio
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Configura el repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Inicia sesión en Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 3. Construir la imagen de Docker
+      - name: Build Docker image
+        run: |
+          docker build delete_producto/. --file delete_producto/Dockerfile \
+          --tag ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest \
+          --build-arg MONGODB_URI=${{ secrets.MONGODB_URI }} \
+          --build-arg MONGODB_DB=${{ secrets.MONGODB_DB }} \
+          --build-arg PORT=${{ secrets.PORT }}
+
+      # 4. Subir la imagen al registro de Docker Hub
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest
+
+      # 5. Desplegar en EC2 (Instalar Docker en EC2 si no está instalado)
+      - name: Install Docker on EC2 and Deploy
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST2 }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # Configuración básica en la instancia
+            if ! command -v docker &> /dev/null; then
+              echo "==> Installing Docker"
+              sudo yum update -y
+              sudo yum install -y docker
+              sudo service docker start
+              sudo usermod -a -G docker ec2-user
+            fi
+            # Detener y eliminar cualquier contenedor existente
+            sudo docker stop delete_producto || true
+            sudo docker rm delete_producto || true
+            # Descargar la nueva imagen desde Docker Hub
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest
+            # Ejecutar el contenedor en el puerto 80
+            sudo docker run -d \
+              --name delete_producto \
+              -p 80:${{ secrets.PORT2 }} \
+              -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
+              -e MONGODB_DB=${{ secrets.MONGODB_DB }} \
+              -e PORT=${{ secrets.PORT }} \
+              ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest
