@@ -55,12 +55,11 @@ jobs:
             sudo docker rm -f $(sudo docker ps -aq) || true
 
             # Run the new container with environment variables
-            sudo su
-            docker run -d --name listusers \
+            sudo docker run -d --name listusers \
             --dns 8.8.8.8 --dns 8.8.4.4 \
             -p 4567:4567 \
             -e DB_HOST='mysqldb.c09k3c0cto4l.us-east-1.rds.amazonaws.com' \
-            -e DB_USER='${{secrets.DB_USERJ}}'' \
+            -e DB_USER='${{secrets.DB_USERJ}}' \
             -e DB_PASSWORD='${{secrets.DB_PASSWORDJ}}' \
             -e DB_NAME='${{secrets.DB_NAMEJ}}' \
             ${{secrets.DOCKER_USERNAMEJ}}/listusers:latest
