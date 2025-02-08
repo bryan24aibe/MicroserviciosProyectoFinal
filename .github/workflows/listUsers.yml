@@ -59,12 +59,11 @@ jobs:
             fi
 
             # Run the new container with environment variables
-            sudo docker run -d \
-              --name listusers \
-              -e DB_HOST=${{ secrets.DB_HOSTJ }} \
-              -e DB_USER=${{ secrets.DB_USERJ }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORDJ }} \
-              -e DB_NAME=${{ secrets.DB_NAMEJ }} \
-              -p 4567:4567 \
-              ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
+            sudo docker run -d --name listusers \
+            -p 4567:4567 \
+            -e DB_HOST="${{ secrets.DB_HOSTJ }}" \
+            -e DB_USER="${{ secrets.DB_USERJ }}" \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORDJ }}" \
+            -e DB_NAME="${{ secrets.DB_NAMEJ }}" \
+            ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
           EOF
