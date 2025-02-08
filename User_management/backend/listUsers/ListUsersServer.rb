@@ -4,7 +4,7 @@ require 'json'
 require_relative 'dbConnection'
 
 configure do
-  set :environment, :production
+  enable :cross_origin
 end
 
 set :bind, '0.0.0.0'
