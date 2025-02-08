@@ -5,7 +5,7 @@ on:
     paths:
       - "delete_producto/**"
     branches:
-      - test_yml
+      - QA
 
 jobs:
   build-and-deploy:
