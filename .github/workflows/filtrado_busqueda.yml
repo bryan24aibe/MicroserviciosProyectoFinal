@@ -41,7 +41,7 @@ jobs:
       - name: 🚀 Connect to EC2 and Deploy Filtrado y Búsqueda Service
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.EC2_HOST5 }}
           username: ${{ secrets.EC2_USERNAME5 }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
