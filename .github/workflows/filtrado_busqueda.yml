@@ -25,12 +25,12 @@ jobs:
 
       - name: 📦 Build and push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/filtradoybusqueda:latest \
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/filtrado_busqueda:latest \
             -f FiltradoyBusqueda/Dockerfile FiltradoyBusqueda \
             --build-arg MONGO_URI=${{ secrets.MONGO_URI }} \
             --build-arg DB_NAME=${{ secrets.DB_NAME }} \
             --build-arg PORT=${{ secrets.PORT5 }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/filtradoybusqueda:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/filtrado_busqueda:latest
 
   deploy:
     name: Deploy to EC2
@@ -56,27 +56,27 @@ jobs:
             fi
 
             echo "🛑 Stopping and removing previous container..."
-            sudo docker stop filtradoybusqueda || true
-            sudo docker rm filtradoybusqueda || true
+            sudo docker stop filtrado_busqueda || true
+            sudo docker rm filtrado_busqueda || true
 
             echo "🧹 Removing old Docker images..."
             sudo docker image prune -af
 
             echo "📥 Pulling the latest Docker image..."
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/filtradoybusqueda:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/filtrado_busqueda:latest
 
             echo "🚀 Running the new container..."
             sudo docker run -d \
-              --name filtradoybusqueda \
+              --name filtrado_busqueda \
               -p 4000:${{ secrets.PORT5 }} \
               -e MONGO_URI=${{ secrets.MONGO_URI }} \
               -e DB_NAME=${{ secrets.DB_NAME }} \
               -e PORT=${{ secrets.PORT5 }} \
               --restart always \
-              ${{ secrets.DOCKER_USERNAME }}/filtradoybusqueda:latest
+              ${{ secrets.DOCKER_USERNAME }}/filtrado_busqueda:latest
 
             echo "🔍 Verifying deployment..."
-            if sudo docker ps -f name=filtradoybusqueda | grep filtradoybusqueda; then
+            if sudo docker ps -f name=filtrado_busqueda | grep filtrado_busqueda; then
               echo "✅ Deployment successful: Filtrado y Búsqueda Service is running."
             else
               echo "❌ Deployment failed: Check logs for errors."
