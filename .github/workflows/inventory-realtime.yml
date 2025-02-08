@@ -1,71 +1,91 @@
-name: Build, Push to Docker Hub, and Deploy to EC2
+name: 🚀 Deploy Inventory Realtime Service to AWS
 
 on:
   push:
     paths:
-      - "inventory-realtime/**"  # Solo ejecuta el workflow si hay cambios en este directorio
-    branches: ["main"]  # Cambia esta rama a la que usas en tu repositorio
+      - "inventory-realtime/**"
+    branches:
+      - QA
 
 jobs:
-  build-push-deploy:
+  build-and-deploy:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Configura el repositorio
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: 🛠️ Checkout repository
+        uses: actions/checkout@v4
 
-      # 2. Inicia sesión en Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      # 3. Construir la imagen de Docker
-      - name: Build Docker image
+      - name: 🔐 Log in to Docker Hub
         run: |
-          docker build inventory-realtime/. --file inventory-realtime/Dockerfile \
-          --tag ${{ secrets.DOCKER_USERNAME }}/inventory-realtime:latest \
-          --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-          --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-          --build-arg AWS_REGION=${{ secrets.AWS_REGION }} \
-          --build-arg DYNAMODB_TABLE=${{ secrets.DYNAMODB_TABLE }} \
-          --build-arg PORT=${{ secrets.PORT }}
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 4. Subir la imagen al registro de Docker Hub
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/inventory-realtime:latest
+      - name: 📦 Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/inventory-realtime:latest \
+            -f inventory-realtime/Dockerfile inventory-realtime \
+            --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --build-arg AWS_REGION=${{ secrets.AWS_REGION }} \
+            --build-arg DYNAMODB_TABLE=${{ secrets.DYNAMODB_TABLE }} \
+            --build-arg PORT=${{ secrets.PORT6 }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/inventory-realtime:latest
 
-      # 5. Desplegar en EC2
-      - name: Install Docker on EC2 and Deploy
-        uses: appleboy/ssh-action@v0.1.8
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+
+    steps:
+      - name: 🚀 Connect to EC2 and Deploy Inventory Realtime Service
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST6 }}
+          host: ${{ secrets.EC2_HOST7 }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # Configuración básica en la instancia
+            echo "🔍 Checking if Docker is installed..."
             if ! command -v docker &> /dev/null; then
-              echo "==> Installing Docker"
+              echo "📦 Installing Docker..."
               sudo yum update -y
               sudo yum install -y docker
               sudo service docker start
-              sudo usermod -a -G docker ec2-user
+              sudo usermod -a -G docker $USER
             fi
-            # Detener y eliminar cualquier contenedor existente
+
+            echo "🛑 Stopping and removing previous container..."
             sudo docker stop inventory-realtime || true
             sudo docker rm inventory-realtime || true
-            # Descargar la nueva imagen desde Docker Hub
+
+            echo "🧹 Removing old Docker images..."
+            sudo docker image prune -af
+
+            echo "📥 Pulling the latest Docker image..."
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/inventory-realtime:latest
-            # Ejecutar el contenedor en el puerto 80
+
+            echo "🚀 Running the new container..."
             sudo docker run -d \
               --name inventory-realtime \
-              -p 80:${{ secrets.PORT6 }} \
+              -p 80:${{ secrets.PORT7 }} \
               -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
               -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
               -e AWS_REGION=${{ secrets.AWS_REGION }} \
               -e DYNAMODB_TABLE=${{ secrets.DYNAMODB_TABLE }} \
               -e PORT=${{ secrets.PORT6 }} \
+              --restart always \
               ${{ secrets.DOCKER_USERNAME }}/inventory-realtime:latest
+
+            echo "🔍 Verifying deployment..."
+            if sudo docker ps -f name=inventory-realtime | grep inventory-realtime; then
+              echo "✅ Deployment successful: Inventory Realtime Service is running."
+            else
+              echo "❌ Deployment failed: Check logs for errors."
+              exit 1
+            fi
+
+      - name: 🔐 Log out of Docker Hub
+        run: docker logout
