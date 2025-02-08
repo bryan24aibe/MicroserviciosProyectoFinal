@@ -15,5 +15,5 @@ const resolvers = {
         },
     },
 };
-
+//fix 1
 module.exports = resolvers;
