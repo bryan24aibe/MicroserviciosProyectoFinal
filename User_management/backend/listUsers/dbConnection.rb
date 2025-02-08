@@ -14,7 +14,7 @@ def connect_to_db
       database: ENV['DB_NAME'],
       port: 3306
     )
-    puts "Connected to the database successfully!"
+    puts "Connected to the database successfully jejex!"
     return client
   rescue Mysql2::Error => e
     # Handle connection error

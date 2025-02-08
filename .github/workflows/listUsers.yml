@@ -60,6 +60,7 @@ jobs:
 
             # Run the new container with environment variables
             sudo docker run -d --name listusers \
+            --dns 8.8.8.8 --dns 8.8.4.4 \
             -p 4567:4567 \
             -e DB_HOST="${{ secrets.DB_HOSTJ }}" \
             -e DB_USER="${{ secrets.DB_USERJ }}" \
