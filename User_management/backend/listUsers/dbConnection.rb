@@ -8,7 +8,7 @@ def connect_to_db
   begin
     # Establish database connection using .env variables
     client = Mysql2::Client.new(
-      host: ENV['DB_HOST'],
+      host: ENV['DB_HOST'] || "mysqldb.c09k3c0cto4l.us-east-1.rds.amazonaws.com",
       username: ENV['DB_USER'],
       password: ENV['DB_PASSWORD'],
       database: ENV['DB_NAME'],
