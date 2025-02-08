@@ -53,9 +53,9 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
 
             # Stop and remove the existing container if it exists
-            if [ \$(sudo docker ps -aq -f name=listusers) ]; then
-              sudo docker stop listusers
-              sudo docker rm listusers
+            if [ "$(sudo docker ps -aq -f name=listusers)" ]; then
+            sudo docker stop listusers
+            sudo docker rm listusers
             fi
 
             # Run the new container with environment variables
