@@ -3,7 +3,7 @@ name: 🚀 Deploy Filtrado y Búsqueda Service to AWS
 on:
   push:
     paths:
-      - "FiltradoyBusqueda/**"
+      - "filtrado_busqueda/**"
     branches:
       - QA
 
