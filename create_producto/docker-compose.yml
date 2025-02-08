@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  db2:
+    container_name: db2
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    logging:
+      driver: none
+
+  create_producto:
+    container_name: create_producto  # Agregar esta línea
+    image: balarai/create_producto:latest
+    restart: always
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db2
+    environment:
+      - MONGODB_URI=mongodb://db2:27017/
+      - MONGODB_DB=product_management
+      - PORT=3001
