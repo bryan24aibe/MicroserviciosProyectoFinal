@@ -4,7 +4,7 @@ from controllers.product_controller import product_bp
 import os
 
 app = Flask(__name__)
-
+#Array1
 # CORS Configuration
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 #Arreglo 12
