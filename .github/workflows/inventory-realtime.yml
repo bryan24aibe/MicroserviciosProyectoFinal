@@ -3,7 +3,7 @@ name: 🚀 Deploy Inventory Realtime Service to AWS
 on:
   push:
     paths:
-      - "inventory-realtime/**"
+      - "update_inventories/inventory-realtime/**"
     branches:
       - QA
 
@@ -26,7 +26,7 @@ jobs:
       - name: 📦 Build and push Docker image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/inventory-realtime:latest \
-            -f inventory-realtime/Dockerfile inventory-realtime \
+            -f update_inventories/inventory-realtime/Dockerfile update_inventories/inventory-realtime \
             --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
             --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             --build-arg AWS_REGION=${{ secrets.AWS_REGION }} \
@@ -75,7 +75,7 @@ jobs:
               -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
               -e AWS_REGION=${{ secrets.AWS_REGION }} \
               -e DYNAMODB_TABLE=${{ secrets.DYNAMODB_TABLE }} \
-              -e PORT=${{ secrets.PORT6 }} \
+              -e PORT=${{ secrets.PORT7 }} \
               --restart always \
               ${{ secrets.DOCKER_USERNAME }}/inventory-realtime:latest
 
