@@ -7,7 +7,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-
+//test1
 // API routes
 app.use('/api', inventoryRoutes);
 
