@@ -1,67 +1,87 @@
-name: Build, Push to Docker Hub, and Deploy to EC2
+name: 🚀 Deploy Delete Product Service to AWS
 
 on:
   push:
     paths:
-      - "delete_producto/**"  # Solo ejecuta el workflow si hay cambios en este directorio
-    branches: ["test_yml"]  # Cambia esta rama a la que usas en tu repositorio
+      - "delete_producto/**"
+    branches:
+      - test_yml
 
 jobs:
-  build-push-deploy:
+  build-and-deploy:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Configura el repositorio
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: 🛠️ Checkout repository
+        uses: actions/checkout@v4
 
-      # 2. Inicia sesión en Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      # 3. Construir la imagen de Docker
-      - name: Build Docker image
+      - name: 🔐 Log in to Docker Hub
         run: |
-          docker build delete_producto/. --file delete_producto/Dockerfile \
-          --tag ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest \
-          --build-arg MONGODB_URI=${{ secrets.MONGODB_URI }} \
-          --build-arg MONGODB_DB=${{ secrets.MONGODB_DB }} \
-          --build-arg PORT=${{ secrets.PORT }}
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 4. Subir la imagen al registro de Docker Hub
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest
+      - name: 📦 Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest \
+            -f delete_producto/Dockerfile delete_producto \
+            --build-arg MONGODB_URI=${{ secrets.MONGODB_URI }} \
+            --build-arg MONGODB_DB=${{ secrets.MONGODB_DB }} \
+            --build-arg PORT=${{ secrets.PORT2 }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest
 
-      # 5. Desplegar en EC2 (Instalar Docker en EC2 si no está instalado)
-      - name: Install Docker on EC2 and Deploy
-        uses: appleboy/ssh-action@v0.1.8
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+
+    steps:
+      - name: 🚀 Connect to EC2 and Deploy Delete Product Service
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST2 }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # Configuración básica en la instancia
+            echo "🔍 Checking if Docker is installed..."
             if ! command -v docker &> /dev/null; then
-              echo "==> Installing Docker"
+              echo "📦 Installing Docker..."
               sudo yum update -y
               sudo yum install -y docker
               sudo service docker start
-              sudo usermod -a -G docker ec2-user
+              sudo usermod -a -G docker $USER
             fi
-            # Detener y eliminar cualquier contenedor existente
+
+            echo "🛑 Stopping and removing previous container..."
             sudo docker stop delete_producto || true
             sudo docker rm delete_producto || true
-            # Descargar la nueva imagen desde Docker Hub
+
+            echo "🧹 Removing old Docker images..."
+            sudo docker image prune -af
+
+            echo "📥 Pulling the latest Docker image..."
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest
-            # Ejecutar el contenedor en el puerto 80
+
+            echo "🚀 Running the new container..."
             sudo docker run -d \
               --name delete_producto \
               -p 80:${{ secrets.PORT2 }} \
               -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
               -e MONGODB_DB=${{ secrets.MONGODB_DB }} \
-              -e PORT=${{ secrets.PORT }} \
+              -e PORT=${{ secrets.PORT2 }} \
+              --restart always \
               ${{ secrets.DOCKER_USERNAME }}/delete_producto:latest
+
+            echo "🔍 Verifying deployment..."
+            if sudo docker ps -f name=delete_producto | grep delete_producto; then
+              echo "✅ Deployment successful: Delete Product Service is running."
+            else
+              echo "❌ Deployment failed: Check logs for errors."
+              exit 1
+            fi
+
+      - name: 🔐 Log out of Docker Hub
+        run: docker logout
