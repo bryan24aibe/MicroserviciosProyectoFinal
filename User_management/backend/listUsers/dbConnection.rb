@@ -12,7 +12,7 @@ def connect_to_db
       username: ENV['DB_USER'],
       password: ENV['DB_PASSWORD'],
       database: ENV['DB_NAME'],
-      port: ENV['DB_PORT'].to_i
+      port: 3306
     )
     puts "Connected to the database successfully!"
     return client

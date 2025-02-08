@@ -3,7 +3,7 @@ name: Build, Push, and Deploy Docker Image listUsers
 on:
   push:
     branches:
-      - feat/user-management
+      - main
 
 jobs:
   build:
