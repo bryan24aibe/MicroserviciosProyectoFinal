@@ -1,67 +1,87 @@
-name: Build, Push to Docker Hub, and Deploy to EC2
+name: 🚀 Deploy Read Service to AWS
 
 on:
   push:
     paths:
-      - "read_service/**"  # Solo ejecuta el workflow si hay cambios en este directorio
-    branches: ["test_yml"]
+      - "read_service/**"
+    branches:
+      - QA
 
 jobs:
-  build-push-deploy:
+  build-and-deploy:
+    name: Build and Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Configura el repositorio
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: 🛠️ Checkout repository
+        uses: actions/checkout@v4
 
-      # 2. Inicia sesión en Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      # 3. Construir la imagen de Docker
-      - name: Build Docker image
+      - name: 🔐 Log in to Docker Hub
         run: |
-          docker build read_service/. --file read_service/Dockerfile \
-          --tag ${{ secrets.DOCKER_USERNAME }}/read_service:latest \
-          --build-arg MONGODB_URI=${{ secrets.MONGODB_URI }} \
-          --build-arg MONGODB_DB=${{ secrets.MONGODB_DB }} \
-          --build-arg PORT=${{ secrets.PORT }}
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 4. Subir la imagen al registro de Docker Hub
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/read_service:latest
+      - name: 📦 Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/read_service:latest \
+            -f read_service/Dockerfile read_service \
+            --build-arg MONGODB_URI=${{ secrets.MONGODB_URI }} \
+            --build-arg MONGODB_DB=${{ secrets.MONGODB_DB }} \
+            --build-arg PORT=${{ secrets.PORT3 }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/read_service:latest
 
-      # 5. Desplegar en EC2 (Instalar Docker en EC2 si no está instalado)
-      - name: Install Docker on EC2 and Deploy
-        uses: appleboy/ssh-action@v0.1.8
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+
+    steps:
+      - name: 🚀 Connect to EC2 and Deploy Read Service
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST3 }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # Configuración básica en la instancia
+            echo "🔍 Checking if Docker is installed..."
             if ! command -v docker &> /dev/null; then
-              echo "==> Installing Docker"
+              echo "📦 Installing Docker..."
               sudo apt-get update -y
               sudo apt-get install -y docker.io
               sudo systemctl start docker
               sudo usermod -aG docker $USER
             fi
-            # Detener y eliminar cualquier contenedor existente a continuacion
+
+            echo "🛑 Stopping and removing previous container..."
             sudo docker stop read_service || true
             sudo docker rm read_service || true
-            # Descargar la nueva imagen desde Docker Hub
+
+            echo "🧹 Removing old Docker images..."
+            sudo docker image prune -af
+
+            echo "📥 Pulling the latest Docker image..."
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/read_service:latest
-            # Ejecutar el contenedor en el puerto 80
+
+            echo "🚀 Running the new container..."
             sudo docker run -d \
               --name read_service \
               -p 80:${{ secrets.PORT3 }} \
               -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
               -e MONGODB_DB=${{ secrets.MONGODB_DB }} \
-              -e PORT=${{ secrets.PORT }} \
+              -e PORT=${{ secrets.PORT3 }} \
+              --restart always \
               ${{ secrets.DOCKER_USERNAME }}/read_service:latest
+
+            echo "🔍 Verifying deployment..."
+            if sudo docker ps -f name=read_service | grep read_service; then
+              echo "✅ Deployment successful: Read Service is running."
+            else
+              echo "❌ Deployment failed: Check logs for errors."
+              exit 1
+            fi
+
+      - name: 🔐 Log out of Docker Hub
+        run: docker logout
