@@ -5,7 +5,7 @@ FROM node:18-slim
 WORKDIR /app
 
 # Copiar package.json y package-lock.json para instalar dependencias primero
-COPY package.json package-lock.json ./
+COPY package.json ./
 
 # Instalar las dependencias del proyecto
 RUN npm install --omit=dev
