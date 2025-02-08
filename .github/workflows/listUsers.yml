@@ -51,13 +51,9 @@ jobs:
             fi
             
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
-
-            # Stop and remove the existing container if it exists
-            if [ "$(sudo docker ps -aq -f name=listusers)" ]; then
-            sudo docker stop listusers
-            sudo docker rm listusers
-            fi
-
+            sudo docker stop $(sudo docker ps -q) || true
+            sudo docker rm -f $(sudo docker ps -aq) || true
+            
             # Run the new container with environment variables
             sudo docker run -d --name listusers \
             --dns 8.8.8.8 --dns 8.8.4.4 \
