@@ -12,7 +12,8 @@ def connect_to_db
       username: ENV['DB_USER'],
       password: ENV['DB_PASSWORD'],
       database: ENV['DB_NAME'],
-      port: 3306
+      port: 3306,
+      protocol: 'tcp'
     )
     puts "Connected to the database successfully jejex!"
     return client
