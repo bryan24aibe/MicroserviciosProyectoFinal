@@ -22,12 +22,9 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAMEJ }}
           password: ${{ secrets.DOCKER_PASSWORDJ }}
 
-      - name: Build listUsers Docker image
+      - name: Build and Push Docker Image
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest ./User_management/backend/listUsers
-
-      - name: Push listUsers Docker image
-        run: |
           docker push ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
 
   deploy:
@@ -40,33 +37,29 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEYJ }}" > private_key.pem
           chmod 400 private_key.pem
 
-      - name: Set Environment Variables
-        run: |
-          echo "DB_HOST=${{ secrets.DB_HOSTJ }}" >> $GITHUB_ENV
-          echo "DB_USER=${{ secrets.DB_USERJ }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORDJ }}" >> $GITHUB_ENV
-          echo "DB_NAME=${{ secrets.DB_NAMEJ }}" >> $GITHUB_ENV
-
-      - name: Connect to EC2 and deploy
+      - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-44-204-238-202.compute-1.amazonaws.com << 'EOF'
-            if ! command -v docker &> /dev/null
-            then
+            # Ensure Docker is installed and running
+            if ! command -v docker &> /dev/null; then
               sudo dnf install -y docker
               sudo systemctl start docker
               sudo systemctl enable docker
             fi
-            
+
+            # Pull the latest image
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
+
+            # Stop and remove existing container safely
             sudo docker stop listusers || true
             sudo docker rm listusers || true
 
-            # Run the new container with environment variables
-           sudo docker run -d --name listusers \
-            -p 4567:4567 \
-            --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
-            --env "DB_USER=$(echo '${{ secrets.DB_USERJ }}' | tr -d '\n')" \
-            --env "DB_PASSWORD=$(echo '${{ secrets.DB_PASSWORDJ }}' | tr -d '\n')" \
-            --env "DB_NAME=$(echo '${{ secrets.DB_NAMEJ }}' | tr -d '\n')" \
-            ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
+            # Run the container with clean environment variables
+            sudo docker run -d --name listusers \
+              -p 4567:4567 \
+              --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
+              --env "DB_USER=$(echo '${{ secrets.DB_USERJ }}' | tr -d '\n')" \
+              --env "DB_PASSWORD=$(echo '${{ secrets.DB_PASSWORDJ }}' | tr -d '\n')" \
+              --env "DB_NAME=$(echo '${{ secrets.DB_NAMEJ }}' | tr -d '\n')" \
+              ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
           EOF
