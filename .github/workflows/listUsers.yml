@@ -6,7 +6,7 @@ on:
       - feat/user-management
     paths:
       - 'User_management/backend/listUsers/**'
-      - '.github/workflows/listusers.yml'
+      - '.github/workflows/listUsers.yml'
 
 
 jobs:
