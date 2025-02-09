@@ -3,7 +3,7 @@ name: Build, Push, and Deploy login Microservice
 on:
   push:
     branches:
-      - main
+      - feat/user-management
 
 jobs:
   build:
@@ -19,16 +19,16 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAMEJ }}
+          password: ${{ secrets.DOCKER_PASSWORDJ }}
 
       - name: Build login Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/login:latest ./User_management/backend/login
+          docker build -t ${{ secrets.DOCKER_USERNAMEJ }}/login:latest ./User_management/backend/login
 
       - name: Push login Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/login:latest
+          docker push ${{ secrets.DOCKER_USERNAMEJ }}/login:latest
 
   deploy:
     needs: build
@@ -37,20 +37,35 @@ jobs:
     steps:
       - name: Set up SSH keys
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
+          echo "${{ secrets.EC2_SSH_KEYJ }}" > private_key.pem
           chmod 400 private_key.pem
+
+      - name: Set Environment Variables
+        run: |
+          echo "DB_HOST=${{ secrets.DB_HOSTJ }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USERJ }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORDJ }}" >> $GITHUB_ENV
+          echo "DB_NAME=${{ secrets.DB_NAMEJ }}" >> $GITHUB_ENV
 
       - name: Connect to EC2 and deploy
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-98-81-224-246.compute-1.amazonaws.com << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-44-204-238-202.compute-1.amazonaws.com << 'EOF'
             if ! command -v docker &> /dev/null
             then
               sudo dnf install -y docker
               sudo systemctl start docker
               sudo systemctl enable docker
             fi
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/login:latest
-            sudo docker stop $(sudo docker ps -q) || true
-            sudo docker rm -f $(sudo docker ps -aq) || true
-            sudo docker run -d -p 3000:3000 --name login ${{ secrets.DOCKER_USERNAME }}/login:latest
+            
+            sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/login:latest
+            sudo docker stop login || true
+            sudo docker rm login || true
+
+            sudo docker run -d --name login \
+              -p 3000:3000 \
+              --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
+              --env "DB_USER=$(echo '${{ secrets.DB_USERJ }}' | tr -d '\n')" \
+              --env "DB_PASSWORD=$(echo '${{ secrets.DB_PASSWORDJ }}' | tr -d '\n')" \
+              --env "DB_NAME=$(echo '${{ secrets.DB_NAMEJ }}' | tr -d '\n')" \
+              ${{ secrets.DOCKER_USERNAMEJ }}/login:latest
           EOF
