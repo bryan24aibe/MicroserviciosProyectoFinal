@@ -3,11 +3,11 @@ name: Deploy MongoDB to EC2
 on:
   push:
     paths:
-      - '.github/workflows/mongo_db.yml'
+      - '.github/workflows/mongodb_category.yml'
     branches: [ "test_gestion_producto" ]
   pull_request:
     paths:
-      - '.github/workflows/mongo_db.yml'
+      - '.github/workflows/mongodb_category.yml'
     branches: 
       - "QA"
       - "main"
