@@ -3,7 +3,7 @@ name: 🚀 Deploy Read Service to AWS
 on:
   push:
     paths:
-      - "read_service/**"
+      - "Gestion_Producto/read_service/**"
     branches:
       - QA
 

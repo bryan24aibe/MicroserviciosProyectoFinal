@@ -3,7 +3,7 @@ name: 🚀 Deploy Inventory Realtime Service to AWS
 on:
   push:
     paths:
-      - "update_inventories/inventory-realtime/**"
+      - "Gestion_Producto/update_inventories/inventory-realtime/**"
     branches:
       - QA
 

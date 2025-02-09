@@ -3,7 +3,7 @@ name: 🚀 Deploy Category Management Service to AWS
 on:
   push:
     paths:
-      - "category_management/**"
+      - "Gestion_Producto/category_management/**"
     branches:
       - QA
 

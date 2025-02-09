@@ -3,7 +3,7 @@ name: 🚀 Deploy Delete Product Service to AWS
 on:
   push:
     paths:
-      - "delete_producto/**"
+      - "Gestion_Producto/delete_producto/**"
     branches:
       - QA
 

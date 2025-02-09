@@ -3,7 +3,7 @@ name: 🚀 Deploy Update Service to AWS
 on:
   push:
     paths:
-      - "update_service/**"
+      - "Gestion_Producto/update_service/**"
     branches:
       - QA
 

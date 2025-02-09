@@ -3,7 +3,7 @@ name: 🚀 Deploy Create Product Service to AWS
 on:
   push:
     paths:
-      - "create_producto/**"
+      - "Gestion_Producto/create_producto/**"
     branches:
       - QA
 
