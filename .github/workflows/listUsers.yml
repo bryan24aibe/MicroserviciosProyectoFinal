@@ -40,6 +40,13 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEYJ }}" > private_key.pem
           chmod 400 private_key.pem
 
+      - name: Set Environment Variables
+        run: |
+          echo "DB_HOST=${{ secrets.DB_HOSTJ }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USERJ }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORDJ }}" >> $GITHUB_ENV
+          echo "DB_NAME=${{ secrets.DB_NAMEJ }}" >> $GITHUB_ENV
+
       - name: Connect to EC2 and deploy
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-44-204-238-202.compute-1.amazonaws.com << 'EOF'
@@ -51,15 +58,15 @@ jobs:
             fi
             
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
-            sudo docker stop $(sudo docker ps -q) || true
-            sudo docker rm -f $(sudo docker ps -aq) || true
+            sudo docker stop listusers || true
+            sudo docker rm listusers || true
 
             # Run the new container with environment variables
             sudo docker run -d --name listusers \
               -p 4567:4567 \
-              -e DB_HOST="${{ secrets.DB_HOSTJ }}" \
-              -e DB_USER="${{ secrets.DB_USERJ }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORDJ }}" \
-              -e DB_NAME="${{ secrets.DB_NAMEJ }}" \
+              -e DB_HOST="$DB_HOST" \
+              -e DB_USER="$DB_USER" \
+              -e DB_PASSWORD="$DB_PASSWORD" \
+              -e DB_NAME="$DB_NAME" \
               ${{ secrets.DOCKER_USERNAMEJ }}/listusers:latest
           EOF
