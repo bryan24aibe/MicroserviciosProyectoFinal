@@ -17,9 +17,8 @@ func InitRedis() {
 	_ = godotenv.Load("../.env")
 
 	client = redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("DB_redisHOST") + ":6379",
-		Password: os.Getenv("DB_redisPASSWORD"),
-		DB:       0,
+		Addr: os.Getenv("DB_redisHOST"),
+		DB:   0,
 	})
 
 	_, err := client.Ping(ctx).Result()
