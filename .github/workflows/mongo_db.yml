@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/mongo_db.yml'
-    branches: [ "test" ]
+    branches: [ "test_gestion_producto" ]
   pull_request:
     paths:
       - '.github/workflows/mongo_db.yml'
