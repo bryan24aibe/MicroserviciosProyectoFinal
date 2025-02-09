@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - feat/user-management
+    paths:
+      - 'User_management/backend/listUsers/**'
+      - '.github/workflows/listusers.yml'
+
 
 jobs:
   build:

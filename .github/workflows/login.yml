@@ -3,7 +3,10 @@ name: Build, Push, and Deploy login Microservice
 on:
   push:
     branches:
-      - feat/user-management
+      - main
+    paths:
+      - 'User_management/backend/login/**'
+      - '.github/workflows/login.yml'
 
 jobs:
   build:
