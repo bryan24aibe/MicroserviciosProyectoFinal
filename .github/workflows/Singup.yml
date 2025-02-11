@@ -1,4 +1,4 @@
-name: Build, Push, and Deploy Singup(corregido) Microservice.
+name: Build, Push, and Deploy Singup Microservice
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - feat/user-management
     paths:
       - 'User_management/backend/singup/**'
-      - '.github/workflows/Singup'
+      - '.github/workflows/Singup.yml'
 
 jobs:
   build:
@@ -45,7 +45,7 @@ jobs:
 
       - name: Connect to EC2 and deploy
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-52-91-206-110.compute-1.amazonaws.com << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-34-238-135-69.compute-1.amazonaws.com << 'EOF'
             if ! command -v docker &> /dev/null
             then
               sudo dnf install -y docker
@@ -53,8 +53,8 @@ jobs:
               sudo systemctl enable docker
             fi
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/singup:latest
-            sudo docker stop $(sudo docker ps -q) || true
-            sudo docker rm -f $(sudo docker ps -aq) || true
+            sudo docker stop singup || true
+            sudo docker rm -f singup || true
             sudo docker run -d -p 3002:3000 \
               --name singup \
               --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
