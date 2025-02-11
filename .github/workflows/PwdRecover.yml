@@ -50,6 +50,8 @@ jobs:
               sudo systemctl enable docker
             fi
 
+            docker network create app-network
+
             if ! docker images | grep -q redis; then
               sudo docker pull redis:latest
             fi
@@ -57,6 +59,7 @@ jobs:
             if ! docker ps | grep -q redis-server; then
               sudo docker run -d --name redis-server \
                 -p 6379:6379 \
+                --network app-network \
                 --restart unless-stopped \
                 redis:latest
             fi
@@ -68,10 +71,11 @@ jobs:
 
             sudo docker run -d --name pwdrecover \
               -p 8080:8080 \
-              --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
-              --env "DB_USER=$(echo '${{ secrets.DB_USERJ }}' | tr -d '\n')" \
-              --env "DB_PASSWORD=$(echo '${{ secrets.DB_PASSWORDJ }}' | tr -d '\n')" \
-              --env "DB_NAME=$(echo '${{ secrets.DB_NAMEJ }}' | tr -d '\n')" \
-              --env "DB_redisHOST=localhost:6379" \
+              --network app-network \
+              --env "DB_HOST=${{ secrets.DB_HOSTJ }}" \
+              --env "DB_USER=${{ secrets.DB_USERJ }}" \
+              --env "DB_PASSWORD=${{ secrets.DB_PASSWORDJ }}" \
+              --env "DB_NAME=${{ secrets.DB_NAMEJ }}" \
+              --env "DB_redisHOST=redis-server:6379" \
               ${{ secrets.DOCKER_USERNAMEJ }}/pwdrecover:latest
           EOF
