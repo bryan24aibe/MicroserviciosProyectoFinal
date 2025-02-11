@@ -55,7 +55,7 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/singup:latest
             sudo docker stop $(sudo docker ps -q) || true
             sudo docker rm -f $(sudo docker ps -aq) || true
-            sudo docker run -d -p 3000:3000 \
+            sudo docker run -d -p 3002:3000 \
               --name singup \
               --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
               --env "DB_USER=$(echo '${{ secrets.DB_USERJ }}' | tr -d '\n')" \
