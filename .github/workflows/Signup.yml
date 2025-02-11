@@ -1,9 +1,12 @@
-name: Build, Push, and Deploy Signup Microservice
+name: Build, Push, and Deploy Singup Microservice
 
 on:
   push:
     branches:
       - feat/user-management
+    paths:
+      - 'User_management/backend/singup/**'
+      - '.github/workflows/Singup'
 
 jobs:
   build:
@@ -22,13 +25,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAMEJ }}
           password: ${{ secrets.DOCKER_PASSWORDJ }}
 
-      - name: Build Signup Docker image
+      - name: Build Singup Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAMEJ }}/signup:latest ./User_management/backend/signup
+          docker build -t ${{ secrets.DOCKER_USERNAMEJ }}/singup:latest ./User_management/backend/singup
 
-      - name: Push Signup Docker image
+      - name: Push Singup Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAMEJ }}/signup:latest
+          docker push ${{ secrets.DOCKER_USERNAMEJ }}/singup:latest
 
   deploy:
     needs: build
@@ -49,14 +52,14 @@ jobs:
               sudo systemctl start docker
               sudo systemctl enable docker
             fi
-            sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/signup:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/singup:latest
             sudo docker stop $(sudo docker ps -q) || true
             sudo docker rm -f $(sudo docker ps -aq) || true
-            sudo docker run -d -p 3002:3000 \
-              --name signup \
+            sudo docker run -d -p 3000:3000 \
+              --name singup \
               --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
               --env "DB_USER=$(echo '${{ secrets.DB_USERJ }}' | tr -d '\n')" \
               --env "DB_PASSWORD=$(echo '${{ secrets.DB_PASSWORDJ }}' | tr -d '\n')" \
               --env "DB_NAME=$(echo '${{ secrets.DB_NAMEJ }}' | tr -d '\n')" \
-              ${{ secrets.DOCKER_USERNAMEJ }}/signup:latest
+              ${{ secrets.DOCKER_USERNAMEJ }}/singup:latest
           EOF
