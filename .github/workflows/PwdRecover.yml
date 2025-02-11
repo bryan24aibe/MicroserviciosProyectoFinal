@@ -50,7 +50,7 @@ jobs:
               sudo systemctl enable docker
             fi
 
-            docker network create app-network
+            docker network create --driver bridge app-network
 
             if ! docker images | grep -q redis; then
               sudo docker pull redis:latest
