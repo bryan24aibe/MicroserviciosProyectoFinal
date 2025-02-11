@@ -6,7 +6,7 @@ on:
       - feat/user-management
     paths:
       - 'User_management/backend/updateUser/**'
-      - '.github/workflows/updateUser'
+      - '.github/workflows/updateUser.yml'
 
 jobs:
   build:
