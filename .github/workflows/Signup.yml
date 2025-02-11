@@ -19,16 +19,16 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAMEJ }}
+          password: ${{ secrets.DOCKER_PASSWORDJ }}
 
       - name: Build Signup Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/signup:latest ./User_management/backend/signup
+          docker build -t ${{ secrets.DOCKER_USERNAMEJ }}/signup:latest ./User_management/backend/signup
 
       - name: Push Signup Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/signup:latest
+          docker push ${{ secrets.DOCKER_USERNAMEJ }}/signup:latest
 
   deploy:
     needs: build
@@ -37,20 +37,26 @@ jobs:
     steps:
       - name: Set up SSH keys
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
+          echo "${{ secrets.EC2_SSH_KEYJ }}" > private_key.pem
           chmod 400 private_key.pem
 
       - name: Connect to EC2 and deploy
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-98-81-224-246.compute-1.amazonaws.com << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-52-91-206-110.compute-1.amazonaws.com << 'EOF'
             if ! command -v docker &> /dev/null
             then
               sudo dnf install -y docker
               sudo systemctl start docker
               sudo systemctl enable docker
             fi
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/signup:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/signup:latest
             sudo docker stop $(sudo docker ps -q) || true
             sudo docker rm -f $(sudo docker ps -aq) || true
-            sudo docker run -d -p 3000:3000 --name signup ${{ secrets.DOCKER_USERNAME }}/signup:latest
+            sudo docker run -d -p 3002:3000 \
+              --name signup \
+              --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
+              --env "DB_USER=$(echo '${{ secrets.DB_USERJ }}' | tr -d '\n')" \
+              --env "DB_PASSWORD=$(echo '${{ secrets.DB_PASSWORDJ }}' | tr -d '\n')" \
+              --env "DB_NAME=$(echo '${{ secrets.DB_NAMEJ }}' | tr -d '\n')" \
+              ${{ secrets.DOCKER_USERNAMEJ }}/signup:latest
           EOF
