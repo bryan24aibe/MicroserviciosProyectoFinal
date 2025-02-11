@@ -43,6 +43,7 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-52-91-206-110.compute-1.amazonaws.com << 'EOF'
+            # Actualizar el sistema y asegurarse de que Docker está instalado
             sudo dnf update -y
             if ! command -v docker &> /dev/null; then
               sudo dnf install -y docker
@@ -50,12 +51,15 @@ jobs:
               sudo systemctl enable docker
             fi
 
+            # Crear la red personalizada para los contenedores
             docker network create --driver bridge app-network
 
+            # Descargar la imagen de Redis si no está presente
             if ! docker images | grep -q redis; then
               sudo docker pull redis:latest
             fi
 
+            # Iniciar Redis en la red personalizada
             if ! docker ps | grep -q redis-server; then
               sudo docker run -d --name redis-server \
                 -p 6379:6379 \
@@ -64,18 +68,21 @@ jobs:
                 redis:latest
             fi
 
+            # Descargar la imagen más reciente de pwdrecover
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/pwdrecover:latest
 
+            # Detener y eliminar cualquier contenedor previo de pwdrecover
             sudo docker stop pwdrecover || true
             sudo docker rm pwdrecover || true
 
+            # Ejecutar pwdrecover con las variables de entorno necesarias
             sudo docker run -d --name pwdrecover \
               -p 8080:8080 \
               --network app-network \
-              --env "DB_HOST=${{ secrets.DB_HOSTJ }}" \
-              --env "DB_USER=${{ secrets.DB_USERJ }}" \
-              --env "DB_PASSWORD=${{ secrets.DB_PASSWORDJ }}" \
-              --env "DB_NAME=${{ secrets.DB_NAMEJ }}" \
+              --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
+              --env "DB_USER=$(echo '${{ secrets.DB_USERJ }}' | tr -d '\n')" \
+              --env "DB_PASSWORD=$(echo '${{ secrets.DB_PASSWORDJ }}' | tr -d '\n')" \
+              --env "DB_NAME=$(echo '${{ secrets.DB_NAMEJ }}' | tr -d '\n')" \
               --env "DB_redisHOST=redis-server:6379" \
               ${{ secrets.DOCKER_USERNAMEJ }}/pwdrecover:latest
           EOF
