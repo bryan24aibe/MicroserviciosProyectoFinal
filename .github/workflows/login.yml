@@ -52,7 +52,7 @@ jobs:
 
       - name: Connect to EC2 and deploy
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-54-208-198-58.compute-1.amazonaws.com << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-34-238-135-69.compute-1.amazonaws.com << 'EOF'
             if ! command -v docker &> /dev/null
             then
               sudo dnf install -y docker
