@@ -42,28 +42,36 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-54-208-198-58.compute-1.amazonaws.com << 'EOF'
-            # Ensure Docker is installed and running
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-52-91-206-110.compute-1.amazonaws.com << 'EOF'
+            sudo dnf update -y
             if ! command -v docker &> /dev/null; then
               sudo dnf install -y docker
               sudo systemctl start docker
               sudo systemctl enable docker
             fi
 
-            # Pull the latest image
+            if ! docker images | grep -q redis; then
+              sudo docker pull redis:latest
+            fi
+
+            if ! docker ps | grep -q redis-server; then
+              sudo docker run -d --name redis-server \
+                -p 6379:6379 \
+                --restart unless-stopped \
+                redis:latest
+            fi
+
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/pwdrecover:latest
 
-            # Stop and remove existing container safely
             sudo docker stop pwdrecover || true
             sudo docker rm pwdrecover || true
 
-            # Run the container with clean environment variables
             sudo docker run -d --name pwdrecover \
               -p 8080:8080 \
               --env "DB_HOST=$(echo '${{ secrets.DB_HOSTJ }}' | tr -d '\n')" \
               --env "DB_USER=$(echo '${{ secrets.DB_USERJ }}' | tr -d '\n')" \
               --env "DB_PASSWORD=$(echo '${{ secrets.DB_PASSWORDJ }}' | tr -d '\n')" \
               --env "DB_NAME=$(echo '${{ secrets.DB_NAMEJ }}' | tr -d '\n')" \
-              --env "DB_redisHOST=redi-z3oxwl.serverless.use1.cache.amazonaws.com:6379" \
+              --env "DB_redisHOST=localhost:6379" \
               ${{ secrets.DOCKER_USERNAMEJ }}/pwdrecover:latest
           EOF
