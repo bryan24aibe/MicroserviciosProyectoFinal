@@ -54,7 +54,6 @@ jobs:
             fi
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/updateuser:latest
             
-            # Parar y eliminar el contenedor con el nombre `updateuser`
             sudo docker stop updateuser || true
             sudo docker rm -f updateuser || true
             
