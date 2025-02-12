@@ -42,7 +42,7 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-34-238-135-69.compute-1.amazonaws.com << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-44-205-135-240.compute-1.amazonaws.com << 'EOF'
             # Actualizar el sistema y asegurarse de que Docker está instalado
             sudo dnf update -y
             if ! command -v docker &> /dev/null; then
