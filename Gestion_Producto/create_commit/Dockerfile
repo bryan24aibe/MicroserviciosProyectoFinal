@@ -1,28 +1,28 @@
-# Usa una imagen base de Python
+# Use a Python base image
 FROM python:3.9-slim
 
-# Establecer el directorio de trabajo dentro del contenedor
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copiar el archivo de requisitos e instalarlos
+# Copy the requirements file and install it
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del código de la aplicación
+# Copy the rest of the application code
 COPY . .
 
-# Configurar las variables de entorno pasadas como argumentos
+# Set the environment variables passed as arguments
 ARG MONGODB_URI
 ARG MONGODB_DB
 ARG PORT
 
-# Exportar las variables de entorno para que estén disponibles en la aplicación
+# Export the environment variables to make them available in the application
 ENV MONGODB_URI=$MONGODB_URI
 ENV MONGODB_DB=$MONGODB_DB
 ENV PORT=$PORT
 
-# Exponer el puerto configurado (por defecto 3001)
+# Expose the configured port (default 3001)
 EXPOSE $PORT
 
-# Comando para ejecutar la aplicación
+# Command to run the application
 CMD ["python", "app.py"]
