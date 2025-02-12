@@ -1,0 +1,435 @@
+openapi: 3.0.0
+info:
+  title: User-Management
+  description: API for managing users in the system.
+  version: 1.0.0
+servers:
+  - url: 'http://<EC2_Public_IP>:3000'
+    description: Node.js service (Port 3000)
+  - url: 'http://<EC2_Public_IP>:3001'
+    description: Node.js service (Port 3001)
+  - url: 'http://<EC2_Public_IP>:3002'
+    description: Node.js service (Port 3002)
+  - url: 'http://<EC2_Public_IP>:4567'
+    description: Ruby service (Port 4567)
+  - url: 'http://<EC2_Public_IP>:8080'
+    description: Go service (Port 8080)
+  - url: 'http://<EC2_Public_IP>:5000'
+    description: Python service (Port 5000)
+    
+tags:
+  - name: User Management
+    description: Operations related to managing users in the system.
+
+paths:
+  /users:
+    get:
+      summary: Retrieve a list of users
+      description: Fetches a list of users with their `id`, `username`, and `email` from the database.
+      operationId: getUsers
+      tags:
+        - User Management
+      responses:
+        '200':
+          description: Successfully retrieved users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: "john_doe"
+                        email:
+                          type: string
+                          example: "john@example.com"
+              examples:
+                example1:
+                  value:
+                    data:
+                      - id: 1
+                        username: "john_doe"
+                        email: "john@example.com"
+                      - id: 2
+                        username: "alice_smith"
+                        email: "alice@example.com"
+                      - id: 3
+                        username: "bob_jones"
+                        email: "bob@example.com"
+                example2:
+                  value:
+                    data:
+                      - id: 4
+                        username: "jane_doe"
+                        email: "jane@example.com"
+                      - id: 5
+                        username: "charlie_brown"
+                        email: "charlie@example.com"
+                example3:
+                  value:
+                    data:
+                      - id: 6
+                        username: "eve_white"
+                        email: "eve@example.com"
+                      - id: 7
+                        username: "mike_green"
+                        email: "mike@example.com"
+        '500':
+          description: Database connection or query error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Database error: <error_message>"
+
+  /hash:
+    get:
+      summary: Hash a password
+      description: Hashes a static password and returns the hashed value.
+      operationId: getHash
+      tags:
+        - User Management
+      responses:
+        '200':
+          description: Successfully hashed the password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: "$2b$10$BQKbAsds56O3Yqw3sdf86l2Eo/qHiqlOSMF22eNLBKwtl7.gHtH5g"
+        '500':
+          description: Error in hashing the password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: "Error in hashing password"
+
+  /login:
+    post:
+      summary: User login
+      description: Authenticate a user by comparing the hashed password with the database.
+      operationId: userLogin
+      tags:
+        - User Management
+      requestBody:
+        description: User credentials for login
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "john_doe"
+                password:
+                  type: string
+                  example: "843228"
+      responses:
+        '200':
+          description: Successfully logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    example: "Success"
+        '400':
+          description: Invalid login credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    example: "Error"
+                  Error:
+                    type: string
+                    example: "Wrong username or password"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    example: "Error"
+                  Error:
+                    type: string
+                    example: "Error in running query"
+
+  /logout:
+    post:
+      summary: Log out a user
+      description: Logs out a user by clearing session data or invalidating tokens.
+      operationId: userLogout
+      tags:
+        - User Management
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    example: "Success"
+                  Message:
+                    type: string
+                    example: "Logged out successfully"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    example: "Error"
+                  Error:
+                    type: string
+                    example: "Invalid request"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    example: "Error"
+                  Error:
+                    type: string
+                    example: "Error in logging out"
+                    
+                    
+  /request-reset:
+    post:
+      summary: Request a password reset
+      description: Generate a recovery code and send it to the user's email to initiate the password reset process.
+      operationId: requestPasswordReset
+      tags:
+        - User Management
+      requestBody:
+        description: Email address to request password reset
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "john@example.com"
+      responses:
+        '200':
+          description: Recovery code generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "✅ Recovery code generated: <code>"
+        '404':
+          description: Email not found
+        '500':
+          description: Failed to store recovery code
+
+  /reset-password:
+    post:
+      summary: Reset a user's password
+      description: Verify the recovery code and update the user's password.
+      operationId: resetPassword
+      tags:
+        - User Management
+      requestBody:
+        description: Email, recovery code, and new password for resetting the user's password
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "john@example.com"
+                code:
+                  type: string
+                  example: "ABC123"
+                password:
+                  type: string
+                  example: "newpassword123"
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "✅ Password reset successfully"
+        '400':
+          description: Invalid or expired recovery code
+        '404':
+          description: Email not found
+        '500':
+          description: Failed to update the password
+          
+  
+  /register:
+    post:
+      summary: Register a new user
+      description: Registers a new user with `username`, `email`, and `password`.
+      operationId: registerUser
+      tags:
+        - User Management
+      requestBody:
+        description: User data for registration
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "john_doe"
+                email:
+                  type: string
+                  example: "john@example.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '200':
+          description: Successfully registered user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                    example: "Success"
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: "Invalid data provided"
+        '500':
+          description: Database query error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Error:
+                    type: string
+                    example: "Error query"
+
+  /update-user:
+    post:
+      summary: Update an existing user
+      description: Update the `username` and `email` of an existing user in the database.
+      operationId: updateUser
+      tags:
+        - User Management
+      requestBody:
+        description: User data for updating
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "john_doe"
+                new_username:
+                  type: string
+                  example: "johnny_doe"
+                new_email:
+                  type: string
+                  example: "johnny@example.com"
+      responses:
+        '200':
+          description: Successfully updated the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User updated successfully"
+        '400':
+          description: Missing required fields or invalid data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required fields"
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+        '500':
+          description: Database connection or query error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Database error: <error_message>"
+
+
