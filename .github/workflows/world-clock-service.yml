@@ -55,6 +55,12 @@ jobs:
               sudo systemctl enable docker
             fi
 
+            # Agregar ec2-user al grupo docker
+            sudo usermod -aG docker ec2-user
+
+            # Asegurarse de que docker puede ejecutarse sin sudo
+            newgrp docker
+
             docker pull ${{ secrets.DOCKER_USERNAMEJ }}/world-clock-service:latest
             docker stop world-clock-service || true
             docker rm world-clock-service || true
