@@ -1,0 +1,63 @@
+name: Deploy MongoDB for Promociones to EC2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/mongodb_promociones.yml'
+    branches: [ "test_gestion_productos" ]
+  pull_request:
+    paths:
+      - '.github/workflows/mongodb_promociones.yml'
+    branches: 
+      - "QA"
+      - "main"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Clone the repository
+      - name: Retrieve repository
+        uses: actions/checkout@v4
+
+      # Step 2: SSH into EC2 and deploy MongoDB
+      - name: Configure and deploy MongoDB for Promociones
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST_PROMOCIONES3 }}
+          username: ${{ secrets.EC2_USER3 }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "✅ Connected via SSH to EC2 for Promociones"
+
+            # Check if Docker is installed, install if missing
+            if ! command -v docker &> /dev/null; then
+              echo "⚙ Installing Docker..."
+              sudo yum update -y
+              sudo yum install -y docker
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker $USER
+            fi
+
+            # Remove any existing MongoDB container to avoid conflicts
+            if [ "$(sudo docker ps -aq -f name=mongo_promociones)" ]; then
+              echo "🗑 Removing old MongoDB container..."
+              sudo docker stop mongo_promociones
+              sudo docker rm mongo_promociones
+            fi
+
+            # Deploy a new MongoDB container
+            echo "🚀 Deploying MongoDB for Promociones..."
+            sudo docker run -d \
+              --name mongo_promociones \
+              -p 27017:27017 \
+              -e MONGO_INITDB_ROOT_USERNAME=${{ secrets.MONGODB_USER3 }} \
+              -e MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGODB_PASSWORD3 }} \
+              -v /home/${{ secrets.EC2_USER }}/mongodb_promociones_data:/data/db \
+              --restart unless-stopped \
+              mongo
+
+            echo "✅ MongoDB for Promociones deployed successfully on EC2"
