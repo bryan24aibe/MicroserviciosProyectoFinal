@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -32,7 +32,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Set up SSH keys
@@ -45,9 +45,10 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-34-201-173-189.compute-1.amazonaws.com << 'EOF'
             if ! command -v docker &> /dev/null
             then
-              brew install --cask docker
-              open /Applications/Docker.app
-              sleep 30  # Wait for Docker to start
+              sudo yum update -y
+              sudo yum install -y docker
+              sudo service docker start
+              sudo systemctl enable docker
             fi
             docker pull ${{ secrets.DOCKER_USERNAMEJ }}/weather-service:latest
             docker stop weather-service || true

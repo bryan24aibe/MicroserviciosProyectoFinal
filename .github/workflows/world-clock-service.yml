@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest  # Cambiado a ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -18,7 +18,6 @@ jobs:
 
       - name: Set up Docker Buildx manually
         run: |
-          $Env:DOCKER_CLI_EXPERIMENTAL="enabled"
           docker buildx create --use
           docker buildx inspect --bootstrap
 
@@ -38,7 +37,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Set up SSH keys
@@ -51,9 +50,9 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-34-201-173-189.compute-1.amazonaws.com << 'EOF'
             if ! command -v docker &> /dev/null
             then
-              winget install --id=Docker.DockerDesktop -e
-              sleep 30
-              docker --version
+              sudo yum install -y docker
+              sudo systemctl start docker
+              sudo systemctl enable docker
             fi
 
             docker pull ${{ secrets.DOCKER_USERNAMEJ }}/world-clock-service:latest
