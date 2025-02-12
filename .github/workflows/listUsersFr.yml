@@ -5,7 +5,7 @@ on:
     branches:
       - feat/user-management
     paths:
-      - "tools_management/frontend/UserList/**"
+      - "user-management/frontend/UserList/**"
       - ".github/workflows/listUsersFr.yml"
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Build UserList-fr Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAMEJ }}/userlist-fr:latest ./user_management/frontend/UserList
+          docker build -t ${{ secrets.DOCKER_USERNAMEJ }}/userlist-fr:latest ./User_management/frontend/UserList
 
       - name: Push UserList-fr Docker image
         run: |
