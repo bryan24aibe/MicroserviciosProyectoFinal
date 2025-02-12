@@ -2,7 +2,7 @@ import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
 
-# Cargar variables de entorno
+# Cargar variables de entorno 1
 load_dotenv()
 
 # Conectar a MongoDB
