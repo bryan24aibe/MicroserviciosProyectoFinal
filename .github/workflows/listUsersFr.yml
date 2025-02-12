@@ -6,7 +6,7 @@ on:
       - feat/user-management
     paths:
       - "tools_management/frontend/UserList/**"
-      - ".github/workflows/userlistFr.yml"
+      - ".github/workflows/listUsersFr.yml"
 
 jobs:
   build:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Build UserList-fr Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAMEJ }}/userlist-fr:latest ./tools_management/frontend/UserList
+          docker build -t ${{ secrets.DOCKER_USERNAMEJ }}/userlist-fr:latest ./user_management/frontend/UserList
 
       - name: Push UserList-fr Docker image
         run: |
@@ -43,11 +43,9 @@ jobs:
       - name: Connect to EC2 and deploy
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@ec2-44-205-135-240.compute-1.amazonaws.com << 'EOF'
-            # Detener y eliminar el contenedor antiguo
             sudo docker stop userlist-fr || true
             sudo docker rm userlist-fr || true
 
-            # Ejecutar el nuevo contenedor con la imagen actualizada
             sudo docker pull ${{ secrets.DOCKER_USERNAMEJ }}/userlist-fr:latest
             sudo docker run -d --name userlist-fr -p 80:5173 ${{ secrets.DOCKER_USERNAMEJ }}/userlist-fr:latest
           EOF
