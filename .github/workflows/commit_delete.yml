@@ -1,0 +1,87 @@
+name: 🚀 Deploy Delete Comment Service to AWS
+
+on:
+  push:
+    paths:
+      - "Gestion_Producto/delete_commit/**"
+    branches:
+      - QA
+
+jobs:
+  build-and-deploy:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛠️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Log in to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: 📦 Build and push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/delete_comment:latest \
+            -f delete_comment/Dockerfile delete_comment \
+            --build-arg MONGODB_URI=${{ secrets.MONGODB_URI }} \
+            --build-arg MONGODB_DB=${{ secrets.MONGODB_DB }} \
+            --build-arg PORT=${{ secrets.PORT10 }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/delete_comment:latest
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+
+    steps:
+      - name: 🚀 Connect to EC2 and Deploy Delete Comment Service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST10 }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "🔍 Checking if Docker is installed..."
+            if ! command -v docker &> /dev/null; then
+              echo "📦 Installing Docker..."
+              sudo yum update -y
+              sudo yum install -y docker
+              sudo service docker start
+              sudo usermod -a -G docker $USER
+            fi
+
+            echo "🚫 Stopping and removing previous container..."
+            sudo docker stop delete_comment || true
+            sudo docker rm delete_comment || true
+
+            echo "🪚 Removing old Docker images..."
+            sudo docker image prune -af
+
+            echo "📥 Pulling the latest Docker image..."
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/delete_comment:latest
+
+            echo "🚀 Running the new container..."
+            sudo docker run -d \
+              --name delete_comment \
+              -p 80:${{ secrets.PORT10 }} \
+              -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
+              -e MONGODB_DB=${{ secrets.MONGODB_DB }} \
+              -e PORT=${{ secrets.PORT10 }} \
+              --restart always \
+              ${{ secrets.DOCKER_USERNAME }}/delete_comment:latest
+
+            echo "🔍 Verifying deployment..."
+            if sudo docker ps -f name=delete_comment | grep delete_comment; then
+              echo "✅ Deployment successful: Delete Comment Service is running."
+            else
+              echo "❌ Deployment failed: Check logs for errors."
+              exit 1
+            fi
+
+      - name: 🔐 Log out of Docker Hub
+        run: docker logout
